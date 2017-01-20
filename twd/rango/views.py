@@ -10,4 +10,8 @@ def index(request):
 
 
 def about(request):
-    return HttpResponse("<h1>About</h1><br/>This is the about page.</br><a href='/rango/'>Back</a>")
+    # Constructs a dict to pass to the template as its context
+    context_dict = {"title": "This is the about page", "name": "Michael"}
+    
+    # Returns a rendered response to send to the client
+    return render(request, 'rango/about.html', context=context_dict)
