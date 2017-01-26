@@ -58,8 +58,8 @@ def populate():
     ]
 
     categories = {"Python": {"pages": python_pages, "likes": 64, "views": 128},
-            "Django": {"pages": django_pages, "likes": 64, "views": 32},
-            "Other Frameworks": {"pages": other_pages, "likes": 32, "views": 16}}
+            "Django": {"pages": django_pages, "likes": 32, "views": 64},
+            "Other Frameworks": {"pages": other_pages, "likes": 16, "views": 32}}
 
 
 
