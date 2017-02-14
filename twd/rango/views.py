@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from rango.models import Page
+from rango.forms import CategoryForm
 
 # Import the Category model
 from rango.models import Category
@@ -43,3 +44,21 @@ def about(request):
 
     # Returns a rendered response to send to the client
     return render(request, 'rango/about.html', context=context_dict)
+
+
+def add_category(request):
+    form = CategoryForm()
+
+    # if a HTTP POST
+    if request.method == 'POST':
+        form = CategoryForm(request.POST)
+
+        if form.is_valid():
+            cat = form.save(commit=True)
+            print cat, cat.slug
+            # most recent added category is on index page so redirect
+            return index(request)
+        else:
+            print form.errors
+
+    return render(request, 'rango/add_category.html', {'form': form})
