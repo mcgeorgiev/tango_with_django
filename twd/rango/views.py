@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from rango.models import Page
+from rango.models import Category
 from rango.forms import CategoryForm
 from rango.forms import PageForm
 from rango.forms import UserForm, UserProfileForm
@@ -11,19 +12,57 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 
-
-# Import the Category model
-from rango.models import Category
+from datetime import datetime
 
 def index(request):
+    request.session.set_test_cookie()
+
     # orders the categories by likes in "-" descending order, top 5
     category_list = Category.objects.order_by('-likes')[:5]
     page_list = Page.objects.order_by('-views')[:5]
+    context_dict = {"categories": category_list,
+                    "pages": page_list}
 
-    context_dict = {"categories": category_list, "pages": page_list}
+    visitor_cookie_handler(request)
+    context_dict['visits'] = request.session['visits']
 
     # Returns a rendered response to send to the client
-    return render(request, 'rango/index.html', context_dict)
+    response = render(request, 'rango/index.html', context=context_dict)
+
+    return response
+
+
+def get_server_side_cookie(request, cookie, default_val=None):
+    val = request.session.get(cookie)
+    if not val:
+        val = default_val
+    return val
+
+
+# not a view, just a helper function
+def visitor_cookie_handler(request):
+    # get the number of visits to the site
+    # if cookie exists, the value is casted to an int, else use 1
+    visits = int(request.COOKIES.get('visits', '1'))
+
+    last_visit_cookie = request.COOKIES.get('last_visit', str(datetime.now()))
+    last_visit_time = datetime.strptime(last_visit_cookie[:-7],
+                                        '%Y-%m-%d %H:%M:%S')
+
+    # if it's been more than a day since the last visit
+    if (datetime.now() - last_visit_time).days > 0:
+        visits = visits + 1
+        # update the last visit cookie
+        request.session['last_visit'] = str(datetime.now())
+    else:
+        visits = 1
+        # set the last visit cookie
+        request.session['last_visit'] = last_visit_cookie
+
+    # update/set the visits cookie
+    request.session['visits'] = visits
+
+
 
 
 def show_category(request, category_name_slug):
@@ -48,6 +87,11 @@ def show_category(request, category_name_slug):
 
 
 def about(request):
+    if request.session.test_cookie_worked():
+        print "TEST COOKIE WORKED"
+        request.session.delete_test_cookie()
+
+
     # Constructs a dict to pass to the template as its context
     context_dict = {"title": "Rango says here is the about page.", "name": "Michael"}
 
