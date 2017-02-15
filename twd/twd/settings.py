@@ -104,6 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Redirects to this page if attempting to access restricted web pages
+LOGIN_URL = '/rango/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

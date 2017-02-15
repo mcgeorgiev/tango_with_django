@@ -8,6 +8,9 @@ from rango.forms import UserForm, UserProfileForm
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
 
 # Import the Category model
 from rango.models import Category
@@ -51,7 +54,7 @@ def about(request):
     # Returns a rendered response to send to the client
     return render(request, 'rango/about.html', context=context_dict)
 
-
+@login_required
 def add_category(request):
     form = CategoryForm()
 
@@ -69,7 +72,7 @@ def add_category(request):
 
     return render(request, 'rango/add_category.html', {'form': form})
 
-
+@login_required
 def add_page(request, category_name_slug):
     try:
         category = Category.objects.get(slug=category_name_slug)
@@ -120,6 +123,7 @@ def register(request):
             profile.save()
 
             registered = True
+
         else:
             print user_form.errors, profile_form.errors
     else:
@@ -159,3 +163,16 @@ def user_login(request):
     else:
         # not a post
         return render(request, 'rango/login.html', {})
+
+
+@login_required
+def restricted(request):
+    message = "Since you're logged in, you can see this text!"
+    return render(request, 'rango/restricted.html', {'message': message})
+    #return HttpResponse("Since you're logged in, you can see this text!")
+
+
+@login_required
+def user_logout(request):
+    logout(request)
+    return HttpResponseRedirect(reverse('index'))
