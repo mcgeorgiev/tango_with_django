@@ -43,15 +43,17 @@ def get_server_side_cookie(request, cookie, default_val=None):
 def visitor_cookie_handler(request):
     # get the number of visits to the site
     # if cookie exists, the value is casted to an int, else use 1
-    visits = int(request.COOKIES.get('visits', '1'))
+    visits = int(get_server_side_cookie(request, 'visits', '1'))
 
-    last_visit_cookie = request.COOKIES.get('last_visit', str(datetime.now()))
+    last_visit_cookie = get_server_side_cookie(request, 'last_visit', str(datetime.now()))
     last_visit_time = datetime.strptime(last_visit_cookie[:-7],
                                         '%Y-%m-%d %H:%M:%S')
 
     # if it's been more than a day since the last visit
-    if (datetime.now() - last_visit_time).days > 0:
+    if (datetime.now() - last_visit_time).seconds > 0:
+        print "HERE"
         visits = visits + 1
+        print visits
         # update the last visit cookie
         request.session['last_visit'] = str(datetime.now())
     else:
@@ -91,12 +93,16 @@ def about(request):
         print "TEST COOKIE WORKED"
         request.session.delete_test_cookie()
 
+    visitor_cookie_handler(request)
 
     # Constructs a dict to pass to the template as its context
-    context_dict = {"title": "Rango says here is the about page.", "name": "Michael"}
+    context_dict = {"title": "Rango says here is the about page.",
+                    "name": "Michael",
+                    "visits": request.session['visits']}
 
     # Returns a rendered response to send to the client
     return render(request, 'rango/about.html', context=context_dict)
+
 
 @login_required
 def add_category(request):
@@ -115,6 +121,7 @@ def add_category(request):
             print form.errors
 
     return render(request, 'rango/add_category.html', {'form': form})
+
 
 @login_required
 def add_page(request, category_name_slug):
